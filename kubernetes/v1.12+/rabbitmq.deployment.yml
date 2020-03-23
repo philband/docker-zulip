@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zulip-rabbitmq
+  namespace: zulip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zulip
+      app.kubernetes.io/component: rabbitmq
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zulip
+        app.kubernetes.io/component: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3.7.7
+        resources:
+          limits:
+            memory: 512Mi
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "zulip"
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+              secretKeyRef:
+                name: zulip-secrets
+                key: SECRETS_rabbitmq_password
+        volumeMounts:
+          - name: rabbitmq-persistent-storage
+            mountPath: /var/lib/rabbitmq
+      volumes:
+      - name: rabbitmq-persistent-storage
+        persistentVolumeClaim:
+          claimName: zulip-rabbitmq-data

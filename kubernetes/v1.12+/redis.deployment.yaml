@@ -8,17 +8,23 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: zulip
-      component: redis
+      app.kubernetes.io/name: zulip
+      app.kubernetes.io/component: redis
   template:
     metadata:
       labels:
-        app: zulip
-        component: redis
+        app.kubernetes.io/name: zulip
+        app.kubernetes.io/component: redis
     spec:
       containers:
       - name: redis
-        image: quay.io/sameersbn/redis:latest
+        image: redis:alpine
+        command:
+          - 'sh'
+          - '-euc'
+          - |
+            echo "requirepass '$$REDIS_PASSWORD'" > /etc/redis.conf
+            exec redis-server /etc/redis.conf
         resources:
           limits:
             cpu: 1
@@ -26,10 +32,16 @@ spec:
         - name: redis
           containerPort: 6379
           protocol: TCP
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: zulip-secrets
+                key: SECRETS_redis_password
         volumeMounts:
-          - name: data
-            mountPath: /var/lib/redis
+          - name: redis-persistent-storage
+            mountPath: /data
       volumes:
-      - name: data
+      - name: redis-persistent-storage
         persistentVolumeClaim:
           claimName: zulip-redis-data

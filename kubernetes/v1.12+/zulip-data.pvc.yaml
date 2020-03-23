@@ -5,8 +5,8 @@ metadata:
   name: zulip-data
   namespace: zulip
   labels:
-    app: zulip
-    component: app
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: zulip
 spec:
   storageClassName: ${STORAGE_CLASS}
   accessModes:

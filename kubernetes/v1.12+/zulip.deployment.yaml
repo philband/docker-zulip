@@ -4,21 +4,27 @@ kind: Deployment
 metadata:
   name: zulip
   namespace: zulip
+  labels:
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: zulip
+    app.kubernetes.io/version: 2.1.2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cowork-chat
-      component: zulip
+      app.kubernetes.io/name: zulip
+      app.kubernetes.io/component: zulip
+      app.kubernetes.io/version: 2.1.2
   template:
     metadata:
       labels:
-        app: cowork-chat
-        component: zulip
+        app.kubernetes.io/name: zulip
+        app.kubernetes.io/component: zulip
+        app.kubernetes.io/version: 2.1.2
     spec:
       containers:
       - name: zulip
-        image: zulip/docker-zulip:2.1.1-0
+        image: zulip/docker-zulip:2.1.2-0
         resources:
           limits:
             cpu: 2
@@ -41,8 +47,6 @@ spec:
           value: 'zulip-rabbitmq'
         - name: SETTING_RABBITMQ_USERNAME
           value: 'zulip'
-        - name: SETTING_RABBITMQ_PASSWORD
-          value: '${ZULIP_RABBITMQ_PASSWORD}'
 
         # Zulip email settings
         - name: SETTING_EMAIL_HOST
@@ -75,16 +79,11 @@ spec:
           value: 'True'
         - name: SSL_CERTIFICATE_GENERATION
           value: 'self-signed'
-
-        # Secrets
-        - name: SECRETS_email_password
-          value: '${SMTP_PASSWORD}'
-        - name: SECRETS_secret_key
-          value: '${ZULIP_SECRET_KEY}'
-        - name: SECRETS_postgres_password
-          value: '${ZULIP_POSTGRES_PASSWORD}'
-        - name: SECRETS_rabbitmq_password
-          value: '${ZULIP_RABBITMQ_PASSWORD}'
+        
+        # Secrets get injected from a dedicated secret, which is also used by the dependent services
+        envFrom:
+          - secretRef:
+              name:  zulip-secrets
 
         # Uncomment this when configuring the mobile push notifications service
         # - name: PUSH_NOTIFICATION_BOUNCER_URL

@@ -5,11 +5,12 @@ metadata:
   name: zulip
   namespace: zulip
   labels:
-    app: zulip
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: zulip
 spec:
   selector:
-    app: zulip
-    component: zulip
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: zulip
   ports:
   - name: http
     port: 80

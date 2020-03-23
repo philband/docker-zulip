@@ -8,17 +8,24 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: zulip
-      component: memcached
+      app.kubernetes.io/name: zulip
+      app.kubernetes.io/component: memcached
   template:
     metadata:
       labels:
-        app: zulip
-        component: memcached
+        app.kubernetes.io/name: zulip
+        app.kubernetes.io/component: memcached
     spec:
       containers:
       - name: memcached
-        image: quay.io/sameersbn/memcached:latest
+        image: memcached:alpine
+        command:
+          - 'sh'
+          - '-euc'
+          - |
+            echo 'mech_list: plain' > "$$SASL_CONF_PATH"
+            echo "zulip@$$HOSTNAME:$$MEMCACHED_PASSWORD" > "$$MEMCACHED_SASL_PWDB"
+            exec memcached -S
         resources:
           limits:
             cpu: 75m
@@ -27,3 +34,13 @@ spec:
         - name: memcached
           containerPort: 11211
           protocol: TCP
+        env:
+        - name: SASL_CONF_PATH
+          value: "/home/memcache/memcached.conf"
+        - name: MEMCACHED_SASL_PWDB
+          value: "/home/memcache/memcached-sasl-db"
+        - name: MEMCACHED_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: zulip-secrets
+                key: SECRETS_memcached_password

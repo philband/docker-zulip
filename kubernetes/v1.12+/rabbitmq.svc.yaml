@@ -5,11 +5,12 @@ metadata:
   name: zulip-rabbitmq
   namespace: zulip
   labels:
-    app: zulip
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: rabbitmq
 spec:
   selector:
-    app: zulip
-    component: rabbitmq
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: rabbitmq
   ports:
   - name: rabbitmq
     port: 5672

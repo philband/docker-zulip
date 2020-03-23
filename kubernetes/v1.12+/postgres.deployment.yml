@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zulip-postgresql
+  namespace: zulip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zulip
+      app.kubernetes.io/component: postgresql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zulip
+        app.kubernetes.io/component: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: zulip/zulip-postgresql:10
+        resources:
+          limits:
+            memory: 1G
+        ports:
+        - name: postgresql
+          containerPort: 5432
+          protocol: TCP
+        env:
+        - name: POSTGRES_DB
+          value: zulip
+        - name: POSTGRES_USER
+          value: zulip
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+              secretKeyRef:
+                name: zulip-secrets
+                key: SECRETS_postgres_password
+        volumeMounts:
+          - name: postgresql-persistent-storage
+            mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgresql-persistent-storage
+        persistentVolumeClaim:
+          claimName: zulip-postgresql-data

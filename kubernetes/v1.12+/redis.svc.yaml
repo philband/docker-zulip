@@ -5,11 +5,12 @@ metadata:
   name: zulip-redis
   namespace: zulip
   labels:
-    app: zulip
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: redis
 spec:
   selector:
-    app: zulip
-    component: redis
+    app.kubernetes.io/name: zulip
+    app.kubernetes.io/component: redis
   ports:
   - name: redis
     port: 6379
